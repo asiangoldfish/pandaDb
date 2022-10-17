@@ -27,7 +27,7 @@ subdirs: $(SUBDIRS)
 
 	@ for dir in $^; do \
 		echo "Building $$dir..."; \
-		$(MAKE) -s -C $$dir; \
+		$(MAKE) -C $$dir; \
 	done
 
 clean:
