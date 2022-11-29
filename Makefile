@@ -31,4 +31,4 @@ subdirs: $(SUBDIRS)
 	done
 
 clean:
-	$(RM) -r $(BUILD_DIR)
+	$(RM) -r $(BUILD_DIR) data
