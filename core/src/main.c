@@ -26,6 +26,8 @@ int main(void) // int argv, char **argc)
     // writeJSON();
     // readJSON();
 
+    //int *ptr = 0x00;
+
     db_initDatabase(DBLOCATION);
     int numCol = 3;
 
