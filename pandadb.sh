@@ -4,8 +4,24 @@ VERSION=0.0.1
 NAME=pandadb
 
 SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"   # Script parent dir
+SCRIPTS="$SCRIPT_PATH/scripts"
 BUILD_DIR="$SCRIPT_PATH"'/build'                            # Build dir path
 MAKEFILE="$SCRIPT_PATH"'/Makefile'                          # Makefile path
+
+APP="$SCRIPT_PATH/build/pandadb_app"
+
+# Includes
+source "$SCRIPTS/usage.sh"
+source "$SCRIPTS/utils.sh"
+
+## Build project
+function build()
+{
+    verifyFile 'file' 'Makefile'
+    if [ "$?" == 1 ]; then errorMessage "1"; fi
+    
+    make
+}
 
 ## Remove all build files
 function clean()
@@ -15,13 +31,9 @@ function clean()
     make clean
 }
 
-## Build project
-function build()
+function create_file()
 {
-    verifyFile 'file' 'Makefile'
-    if [ "$?" == 1 ]; then errorMessage "1"; fi
-
-    make
+    printf "hello!\n"
 }
 
 ## Prints error message and exits
@@ -40,15 +52,8 @@ function errorMessage()
         2 )
             printf "%s: Directory \'%s\' already exists\n" "$NAME" "$arg2"
         exit;;
-            
+        
     esac
-}
-
-## Initialize server
-function initialize()
-{
-    local ip='127.0.0.1'
-    local port='15000'
 }
 
 ## Create new project module
@@ -61,17 +66,17 @@ function newModule()
     # Prompt for new module name
     printf "New module name: "
     read -r dirname
-
+    
     # Verify that the named directory does not already exist
     verifyFile "dir" "$dirname"; local exitCode="$?"
     if [ "$exitCode" == 0 ]; then errorMessage "2" "$dirname"; fi
-
+    
     # Verify that the Makefile template exists
     verifyFile "file" "$dirname"; local exitCode="$?"
     if [ "$exitCode" == 0 ]; then errorMessage "2" "$dirname"; fi
-
+    
     dirpath="$SCRIPT_PATH/$dirname"     # New module path
-
+    
     # Generate new module
     printf "Generating new module \'%s\'...\n" "$dirname"
     mkdir "$SCRIPT_PATH/$dirname"
@@ -79,10 +84,10 @@ function newModule()
     # Generate Makefile
     printf "Generating Makefile...\n"
     cp "$makefilePath" "$dirpath/Makefile"
-
+    
     # Generate include and src directories
     printf "Setting up module...\n"
-    mkdir "$dirpath/src" "$dirpath/include" 
+    mkdir "$dirpath/src" "$dirpath/include"
 }
 
 ## Rebuild project
@@ -99,7 +104,74 @@ function rebuild()
 ## Start the Panda Database server
 function startServer()
 {
-    printf "Starting server...\n"
+    # Arguments activated by command-line arguments and default values
+    local build='false'
+    local host=127.0.0.1
+    local port=11000
+    local rebuild='false'
+    local buildStatus=0         ## Whether build was successful
+    
+    local args; declare -A args=(
+        [build]='false'
+        [host]='127.0.0.1'
+        [port]='11000'
+        [rebuild]='false'
+        [buildStatus]=0
+    )
+
+    parseCliArgs "${args[*]}}" "$@"; exit 0
+    
+    ## Parse commands
+    local index=0           # Access elements based on index
+    for i in "${@:1}"; do
+        case "$i" in
+            "build" ) args[build]=true;;
+            'help'      ) usage_start_server; exit;;
+            'host'      ) host="$1";;
+            'port'      ) port="$1";;
+            'rebuild'   ) rebuild='true';;
+        esac
+        shift               # Next argument
+
+        ((index+=1))        # Increment index
+    done
+
+    printf "%s\n" "${args[build]}"
+    
+    exit 0
+    # Build or rebuild project if this option was passed
+    if [ "$build" == true ]; then
+        printf "Building project...\n"
+        build 1> /dev/null
+        buildStatus="$?"
+        
+        elif [ "$rebuild" == true ]; then
+        printf "Building project...\n"
+        rebuild /dev/null
+        buildStatus="$?"
+    fi
+    
+    # Has the project been built yet?
+    verifyFile 'file' "$APP"; local exitCode="$?"
+    if [ "$exitCode" != 0 ]; then
+        printf '%s: Could not initiate the server. Is it built yet?\n' "$NAME"
+        exit 1
+    fi
+    
+    # Only execute the program if the build was successful
+    if [ "$buildStatus" == 0 ]; then
+        printf '\n'             # Newline
+        "$APP" "$port" "$host"
+    fi
+}
+
+function parse()
+{
+    ## Parse commands
+    for i in "${@:1}"; do
+        echo "$0"
+        echo "$i"
+    done
 }
 
 ## Verify file or directory
@@ -123,25 +195,6 @@ function verifyFile()
     fi
 }
 
-## Help page
-function usage()
-{
-    echo "Usage: $NAME [OPTION] ...
-
-Utility tool for managing the Panda Database.
-
-Options:
-    build                   build the application
-    clean                   clean all build files
-    help                    this page
-    new-module              create new module with Makefile template
-    path                    temporarily adds this script to PATH
-    rebuild                 rebuild the application
-    start-server            start the Panda Database server
-    version                 version number"
-}
-
-
 ## Parses commands from console
 function parseCmds()
 {
@@ -149,8 +202,9 @@ function parseCmds()
     
     for arg in "$@"; do
         case "$arg" in
-            'clean' ) clean; exit;;             # Removes all build files
             'build' ) build; exit;;             # Builds the project with Make
+            'clean' ) clean; exit;;             # Removes all build files
+            'create-file' ) create_file; exit;; # Create new project file
             'help' ) usage; exit;;              # Help page
             'new-module' ) newModule; exit;;    # Create a new project module
             'path' )                            # Adds this script to PATH
@@ -159,7 +213,7 @@ function parseCmds()
                 break
             ;;
             'rebuild' ) rebuild; exit;;        # Cleans and rebuilds the project
-            'start-server' ) startServer; exit;;
+            'start-server' ) startServer "$@"; exit;; # Start the server
             'version' ) echo "version $VERSION"; exit;; # Prints version no.
             *) usage; exit;;                    # Invalid command
         esac
@@ -170,7 +224,9 @@ function parseCmds()
 ## Main function
 function main()
 {
-    printf "Starting server..."
+    # Parse commands and call functions accordingly
+    parseCmds "$@"
 }
 
-parseCmds "$@"
+# Execute program
+main "$@"

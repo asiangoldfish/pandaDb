@@ -1,7 +1,6 @@
 CC				:= gcc
-INCLUDES		= ../db_utils/include include 
-IFLAGS			= $(foreach flag, $(INCLUDES), -I $(flag))
-CFLAGS			:= -Wall -Wextra -g $(IFLAGS)
+INCLUDES		:= include
+CFLAGS			:= -Wall -Wextra -g -I $(INCLUDES)
 
 BUILD_DIR		:= ../build
 SRC				:= ${wildcard src/*.c}

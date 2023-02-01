@@ -2,6 +2,9 @@
  * Manage database accounts
  */
 
+#ifndef PD_ACCOUNTS_H
+#define PD_ACCOUNTS_H 1
+
 #include "pd_database.h"
 
 /**
@@ -70,3 +73,5 @@ int pd_getGroupId(pd_Database *db, const char *groupName);
  * @return int 0: success, 1: fail
  */
 int pd_removeFromGroup(pd_Database *db, int id);
+
+#endif // "pd_accounts.c" included
