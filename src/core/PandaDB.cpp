@@ -1,8 +1,10 @@
 #include "PandaDB.h"
 
+#include "config.h"
 #include "header.hpp"
 #include "core/Logger.h"
 #include "../util/util.h"
+#include <filesystem>
 
 /*
 
@@ -43,16 +45,14 @@
  * @return 0 if exists, 1 if not
  */
 
+PandaDB::PandaDB()
+{
+    // Insert special files here. These will never be deleted!
+    specialFiles.push_back("users");
+}
+
 bool PandaDB::initDatabase(std::string name)
 {
-    /*
-    if (util::directoryCheck(conf::databaseDirPath()) == util::DIR_NO_ACCESS)
-    {
-        Logger::fatal("INITIATION FAILED: Cannot access database directory");
-        return false;
-    }
-    */
-
     // Create directory.
     if (std::filesystem::create_directories(name))
     {
@@ -107,4 +107,35 @@ bool PandaDB::createEntry(std::string file, std::string *entries, int numCols)
 bool PandaDB::checkFile(std::string tableName)
 {
     return false;
+}
+
+int PandaDB::createFile(std::string filepath)
+{
+    if (util::fileExists(conf::databaseDirPath() + "/" + filepath))
+    {
+        return 1;
+    }
+    else
+    {
+        std::ofstream output(conf::databaseDirPath() + "/" + filepath);
+        if (!output)
+        {
+            return 2;
+        }
+    }
+
+    return 0;
+}
+
+int PandaDB::deleteFile(std::string filename)
+{
+    for (auto file : specialFiles)
+    {
+        if (filename == file)
+        {
+            return 2;
+        }
+    }
+
+    return !std::filesystem::remove(conf::databaseDirPath() + "/" + filename);
 }

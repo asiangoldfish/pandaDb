@@ -1,29 +1,40 @@
 #include "util/util.h"
 #include "header.hpp"
+#include "util.h"
 
 // #include "core/Logger.cpp"
 
-util::DIR_RESPONSE util::directoryCheck(std::string _path)
+util::DIR_RESPONSE util::directoryExists(std::string path)
 {
-    /*
-    DIR_NO_ACCESS,
-    DIR_HAS_ACCESS,
-    DIR_NOT_EXISTS,
-    DIR_EXISTS
-    */
-
-   // TODO - Implement check for directory exists and access right
-
-    const char *const path = _path.c_str();
-
-    struct stat info;
-    stat(path, &info);
-
-    if (info.st_mode & S_IRWXU)
+    if (std::filesystem::is_directory(path))
     {
-        // Logger::fatal("Unable to access directory");
-        return DIR_HAS_ACCESS;
+        return util::DIR_EXISTS;
     }
+    else
+    {
+        return util::DIR_NOT_EXISTS;
+    }
+}
 
-    return DIR_NO_ACCESS;
+util::DIR_RESPONSE util::directoryHasAccess(std::string path)
+{
+    // Check if the directory is accessible (readable and executable) for the current user
+    if (access(path.c_str(), R_OK | X_OK) == 0)
+    {
+        return util::DIR_HAS_ACCESS;
+    }
+    else
+    {
+        return util::DIR_NOT_EXISTS;
+    }
+}
+
+util::FILE_RESPONSE util::fileExists(std::string path)
+{
+    if (std::filesystem::exists(path)) 
+    {
+        return util::FILE_HAS_ACCESS;
+    } else {
+        return util::FILE_NO_ACCESS;
+    }
 }

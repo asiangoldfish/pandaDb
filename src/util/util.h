@@ -21,7 +21,9 @@ namespace util
         DIR_EXISTS
     };
 
-    DIR_RESPONSE directoryCheck(std::string _path);
+    DIR_RESPONSE directoryExists(std::string path);
+    DIR_RESPONSE directoryHasAccess(std::string path);
+    FILE_RESPONSE fileExists(std::string path);
 }
 
 #endif

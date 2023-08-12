@@ -8,6 +8,12 @@
 #include <unistd.h>
 #include <cstdlib>
 #include <sstream>
+#include <memory>
+
+// Containers
+#include <iterator>
 #include <vector>
+#include <map>
+#include <unordered_map>
 
 #include "config.h"

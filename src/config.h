@@ -14,7 +14,11 @@ namespace conf
     inline std::string databaseDirPath()
     {
         std::stringstream ss;
+#ifdef NDEBUG
+        ss << "pandaDBDir";
+#else
         ss << std::getenv("HOME") << "/pandaDB";
+#endif
         return ss.str();
     }     
 }
