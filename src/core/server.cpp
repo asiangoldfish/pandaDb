@@ -4,7 +4,7 @@
 #include <sys/stat.h> // mkdir
 #include <unistd.h>
 
-#include "db_server.h"
+#include "server.h"
 
 int initServer(serverInfo *server)
 {
