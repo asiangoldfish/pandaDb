@@ -1,19 +1,18 @@
+#include <algorithm>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
-#include <iostream>
-#include <string>
 #include <iomanip>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <cstdlib>
-#include <sstream>
+#include <iostream>
 #include <memory>
+#include <sstream>
+#include <string>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 // Containers
 #include <iterator>
-#include <vector>
 #include <map>
 #include <unordered_map>
-
-#include "config.h"
+#include <vector>

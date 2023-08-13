@@ -1,15 +1,16 @@
 #include "Application.h"
 
-#include "commands/Command.h"
+#include "config.hpp"
+#include "core/Logger.h"
 #include "core/PandaDB.h"
-#include "config.h"
 #include "header.hpp"
 #include "util/util.h"
-#include "core/Logger.h"
 #include <memory>
 
+#include "commands/cmd_header.h"
+
 Application::Application()
-    : appShouldClose(false)
+  : appShouldClose(false)
 {
 }
 
@@ -19,10 +20,10 @@ Application::~Application()
     db = nullptr;
 }
 
-bool Application::init()
+bool
+Application::init()
 {
-    if (!db->initDatabase(conf::databaseDirPath()))
-    {
+    if (!db->initDatabase(conf::databaseDirPath())) {
         return false;
     }
 
@@ -32,12 +33,13 @@ bool Application::init()
     return true;
 }
 
-void Application::run()
+void
+Application::run()
 {
-    std::cout << "Welcome to PandaDB!\nEnter \'help\' command for commands.\n" << std::endl;
+    std::cout << "Welcome to PandaDB!\nEnter \'help\' command for commands.\n"
+              << std::endl;
 
-    while (!appShouldClose)
-    {
+    while (!appShouldClose) {
         std::cout << "Command: ";
 
         std::string command;
@@ -47,64 +49,69 @@ void Application::run()
     }
 }
 
-void Application::handleCommand(std::string& commandStr)
+void
+Application::handleCommand(std::string& commandStr)
 {
+    if (commandStr == "quit") {
+        appShouldClose = true;
+        return;
+    }
+
     std::istringstream iss(commandStr);
     std::string commandName;
     iss >> commandName;
 
     std::vector<std::string> args;
     std::string arg;
-    while (iss >> arg) 
-    {
+    while (iss >> arg) {
         args.push_back(arg);
     }
 
+    // One word command
     auto it = commands.find(commandName);
-    if (it != commands.end())
-    {
-        it->second->execute(args, *db);
-    }
-    else
-    {
+    if (it != commands.end()) {
+        if (it->first == "quit") {
+            appShouldClose = true;
+        } else {
+            it->second->execute(args, *db);
+        }
+    } else {
         // Combine only the first argument with the command name
         std::string combinedCommand = commandName;
-        if (!args.empty())
-        {
+        if (!args.empty()) {
             combinedCommand += " " + args[0];
         }
 
         it = commands.find(combinedCommand);
-        if (it != commands.end())
-        {
-            args.erase(args.begin()); // Remove the first argument
+        if (it != commands.end()) {
+            args.erase(args.begin());       // Remove the first argument
             it->second->execute(args, *db); // Pass the remaining arguments
-        }
-        else
-        {
+        } else {
             std::cout << "Unrecognized command" << std::endl;
         }
     }
 }
 
-void Application::registerCommands()
+void
+Application::registerCommands()
 {
     // Insert commands here
-    commands["help"] = std::make_unique<HelpCommand>();
-    commands["h"] = std::make_unique<HelpCommand>();
+    commands["help"] = std::make_unique<cmd::Help>();
+    commands["h"] = std::make_unique<cmd::Help>();
 
-    //commands["quit"] = "Quit this application";
+    commands["show files"] = std::make_unique<cmd::ShowFiles>();
+    commands["ls"] = std::make_unique<cmd::ShowFiles>();
 
-    commands["show files"] = std::make_unique<ShowFilesCommand>();
-    commands["ls"] = std::make_unique<ShowFilesCommand>();
+    commands["select file"] = std::make_unique<cmd::SelectFile>();
 
-    commands["select file"] = std::make_unique<SelectFileCommand>();
+    commands["show data"] = std::make_unique<cmd::ShowData>();
+    commands["cat"] = std::make_unique<cmd::ShowData>();
 
-    //commands["show data"] = "Display a selected file's data";
-    
-    commands["create file"] = std::make_unique<CreateFileCommand>();
-    commands["touch"] = std::make_unique<CreateFileCommand>();
+    commands["create file"] = std::make_unique<cmd::CreateFile>();
+    commands["touch"] = std::make_unique<cmd::CreateFile>();
 
-    commands["delete file"] = std::make_unique<DeleteFileCommand>();
-    commands["rm"] = std::make_unique<DeleteFileCommand>();
+    commands["delete file"] = std::make_unique<cmd::DeleteFile>();
+    commands["rm"] = std::make_unique<cmd::DeleteFile>();
+
+    commands["create entry"] = std::make_unique<cmd::CreateEntry>();
 }

@@ -1,10 +1,9 @@
 #include "PandaDB.h"
 
-#include "config.h"
-#include "header.hpp"
+#include "config.hpp"
 #include "core/Logger.h"
-#include "../util/util.h"
-#include <filesystem>
+#include "header.hpp"
+#include "util/util.h"
 
 /*
 
@@ -19,7 +18,7 @@
         Logger::fatal("Failed to initialize the database");
         return 1;
     }
-    
+
     int numCol = 3;
 
     std::string columns[3] = {
@@ -49,93 +48,160 @@ PandaDB::PandaDB()
 {
     // Insert special files here. These will never be deleted!
     specialFiles.push_back("users");
+    specialFiles.push_back(".metadata");
+
+    // Legal data types
+    legalTypes.push_back("int8");
+    legalTypes.push_back("int32");
+    legalTypes.push_back("int64");
+    legalTypes.push_back("float32");
+    legalTypes.push_back("float64");
+    legalTypes.push_back("bool");
+    legalTypes.push_back("datetime");
+    legalTypes.push_back("varchar");
 }
 
-bool PandaDB::initDatabase(std::string name)
+bool
+PandaDB::initDatabase(std::string name)
 {
     // Create directory.
-    if (std::filesystem::create_directories(name))
-    {
+    if (std::filesystem::create_directories(name)) {
         Logger::info("Creating new database directory at " + name);
     }
 
     return true;
 }
 
-bool PandaDB::createEntry(std::string file, std::string *entries, int numCols)
+void
+PandaDB::createEntry(std::string entry)
 {
     std::ofstream outfile;
-    int bufferSize = 2048; // Max table file size
-    char delimiter = ',';  // CSV delimiter
-
-    outfile.open(conf::databaseDirPath() + file, std::ios::ate);
-    if (outfile.fail())
-    {
-        Logger::warn("File \'" + file + "\' does not exist. Failed to create entry.");
-        return false;
-    }
-    else
-    {
-
-        // Add new entry to the table CSV
-        for (int i = 0; i < numCols; i++)
-        {
-            // Insert id
-            if (i == 0)
-            {
-                outfile << "0\n";
-            }
-
-            outfile << entries[i] << "\n";
-
-            // Delimiter
-            if (i + 1 < numCols)
-            {
-                outfile << delimiter << "\n";
-            }
-            else
-            {
-                outfile << std::endl;
-            }
-        }
-    }
-
-    outfile.close();
-    return 0;
+    outfile.open(selectedFile, std::ios_base::app);
+    outfile << entry << "\n";
 }
 
-bool PandaDB::checkFile(std::string tableName)
+bool
+PandaDB::checkFile(std::string tableName)
 {
     return false;
 }
 
-int PandaDB::createFile(std::string filepath)
+int
+PandaDB::createFile(std::string filename, std::vector<std::string> argStr)
 {
-    if (util::fileExists(conf::databaseDirPath() + "/" + filepath))
-    {
+    std::ofstream output;
+
+    if (util::fileExists(conf::databaseDirPath() + "/" + filename)) {
         return 1;
-    }
-    else
-    {
-        std::ofstream output(conf::databaseDirPath() + "/" + filepath);
-        if (!output)
-        {
+    } else {
+        output.open(conf::databaseDirPath() + "/" + filename);
+        if (!output) {
             return 2;
         }
     }
+
+    for (auto iter = argStr.begin(); iter != argStr.end(); iter++) {
+        output << *(iter);
+
+        // Set delimiter
+        if (iter + 1 != argStr.end()) {
+            output << ",";
+        }
+    }
+
+    output << "\n";
 
     return 0;
 }
 
-int PandaDB::deleteFile(std::string filename)
+int
+PandaDB::deleteFile(std::string filename)
 {
-    for (auto file : specialFiles)
-    {
-        if (filename == file)
-        {
+    for (auto file : specialFiles) {
+        if (filename == file) {
             return 2;
         }
     }
 
+    if (conf::databaseDirPath() + "/" + filename == selectedFile) {
+        selectedFile = "";
+    }
+
     return !std::filesystem::remove(conf::databaseDirPath() + "/" + filename);
+}
+
+bool
+PandaDB::showData()
+{
+    using namespace std;
+
+    if (selectedFile == "") {
+        return false;
+    }
+
+    ifstream infile(selectedFile);
+
+    string line;
+
+    int colwidth = 0;
+
+    // Discard first line. That's only columns
+    {
+        getline(infile, line);
+        istringstream iss(line);
+        string columnData;
+        vector<string> columns;
+
+        while (getline(iss, columnData, ',')) {
+            columns.push_back(columnData);
+            colwidth =
+              conf::columnWidth * columns.size() + (columns.size() * 3) + 1;
+        }
+
+        printSeperator('-', colwidth);
+
+        cout << "| ";
+
+        for (auto iter = columns.begin(); iter != columns.end(); iter++) {
+            cout << left << setw(conf::columnWidth) << *iter;
+            cout << " | ";
+        }
+
+        cout << std::endl;
+        printSeperator('-', colwidth);
+    }
+
+    while (getline(infile, line)) {
+        istringstream iss(line);
+        string columnData;
+        vector<string> columns;
+
+        while (getline(iss, columnData, ',')) {
+            columns.push_back(columnData);
+            colwidth =
+              conf::columnWidth * columns.size() + (columns.size() * 3) + 1;
+        }
+
+        cout << "| ";
+
+        for (auto iter = columns.begin(); iter != columns.end(); iter++) {
+            cout << left << setw(conf::columnWidth) << *iter;
+            cout << " | ";
+        }
+
+        cout << std::endl;
+    }
+
+    printSeperator('-', colwidth);
+
+    return true;
+}
+
+void
+PandaDB::printSeperator(char divider, int repetitions)
+{
+    for (int i = 0; i < repetitions; i++) {
+        std::cout << "-";
+    }
+    std::cout << std::endl;
 }

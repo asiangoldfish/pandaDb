@@ -5,17 +5,20 @@
 
 class Logger
 {
-    enum class SEVERITY { INFO, DEBUG, WARN, FATAL };
+    enum class SEVERITY
+    {
+        INFO,
+        DEBUG,
+        WARN,
+        FATAL
+    };
 
-public:
+  public:
     // TODO - Print with timestamp
     static void info(std::string msg);
     static void debug(std::string msg);
     static void warn(std::string msg);
     static void fatal(std::string msg);
-
-private:
-    static std::string reset, black, red, green, yellow, blue, magenta, cyan, white;
 };
 
 #endif
