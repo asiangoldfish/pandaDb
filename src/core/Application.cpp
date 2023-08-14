@@ -70,7 +70,7 @@ Application::handleCommand(std::string& commandStr)
     // One word command
     auto it = commands.find(commandName);
     if (it != commands.end()) {
-        if (it->first == "quit") {
+        if (it->first == "quit" || it->first == "exit") {
             appShouldClose = true;
         } else {
             it->second->execute(args, *db);
