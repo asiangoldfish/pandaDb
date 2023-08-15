@@ -9,6 +9,7 @@ cmd::Help::Help()
     commands["select"] = "Select a file. Its data can then be displayed.";
     commands["show data"] = "Display a selected file's data";
     commands["create file"] = "Create a new file";
+    commands["delete file"] = "Delete a file";
     commands["create entry"] = "Create a new entry in the selected file";
 }
 
