@@ -11,17 +11,11 @@ class CreateEntry : public Command
 {
   public:
     virtual void execute(const std::vector<std::string>& args,
-                         PandaDB& db) override
-    {
-        if (args.size() == 1) {
-            createEntry(args[0], db);
-        } else {
-            Logger::info("Usage: create entry {column data}");
-        }
-    }
+                         PandaDB& db) override;
 
   private:
-    void createEntry(std::string entry, PandaDB& db);
+    void createEntry(std::vector<std::string> values, PandaDB& db);
+    void createEntry(std::string values, PandaDB& db);
 };
 
 }

@@ -4,8 +4,8 @@
 #include "core/Logger.h"
 #include "core/PandaDB.h"
 #include "header.hpp"
+#include "termios.h"
 #include "util/util.h"
-#include <memory>
 
 #include "commands/cmd_header.h"
 
@@ -75,10 +75,12 @@ Application::run()
               << std::endl;
 
     while (!appShouldClose) {
-        std::cout << "Command: ";
 
         std::string command;
-        std::getline(std::cin, command);
+        while (command == "") {
+            std::cout << "Command: ";
+            std::getline(std::cin, command);
+        }
 
         handleCommand(command);
     }
@@ -87,7 +89,7 @@ Application::run()
 void
 Application::handleCommand(std::string& commandStr)
 {
-    if (commandStr == "quit") {
+    if (commandStr == "quit" || commandStr == "exit") {
         appShouldClose = true;
         return;
     }
@@ -98,6 +100,13 @@ Application::handleCommand(std::string& commandStr)
 
     std::vector<std::string> args;
     std::string arg;
+
+    // Strings start and end with double-quotes. We must handle cases
+    // where spaces are present in the string so it doesn't split it into
+    // several arguments.
+    bool inQuotes = false;
+    std::string quotedArg;
+
     while (iss >> arg) {
         args.push_back(arg);
     }
@@ -105,7 +114,7 @@ Application::handleCommand(std::string& commandStr)
     // One word command
     auto it = commands.find(commandName);
     if (it != commands.end()) {
-            it->second->execute(args, *db);
+        it->second->execute(args, *db);
     } else {
         // Combine only the first argument with the command name
         std::string combinedCommand = commandName;

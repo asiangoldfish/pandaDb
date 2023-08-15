@@ -29,7 +29,7 @@ class PandaDB
      * @return int Whether the table was successfully created. 0 for success,
      *             1 for failed.
      */
-    void createEntry(std::string entry);
+    void createEntry(std::vector<std::string> values);
     bool checkFile(std::string tableName);
     int createFile(std::string filename, std::vector<std::string> argStr);
     int deleteFile(std::string filename);

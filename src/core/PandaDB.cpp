@@ -73,11 +73,23 @@ PandaDB::initDatabase(std::string name)
 }
 
 void
-PandaDB::createEntry(std::string entry)
+PandaDB::createEntry(std::vector<std::string> values)
 {
     std::ofstream outfile;
     outfile.open(selectedFile, std::ios_base::app);
-    outfile << entry << "\n";
+
+    std::string newValue;
+
+    for (auto value : values) {
+        newValue.append(value);
+        newValue.append(",");
+    }
+
+    if (newValue != "") {
+        newValue.pop_back();
+    }
+
+    outfile << newValue;
 }
 
 bool
