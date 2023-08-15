@@ -13,7 +13,7 @@ SelectFile::execute(const std::vector<std::string>& args, PandaDB& db)
         std::string fileName = args[0];
         this->select(fileName, db);
     } else {
-        std::cout << "Usage: select file <filename>" << std::endl;
+        std::cout << "Usage: select <filename>" << std::endl;
     }
 }
 

@@ -9,6 +9,41 @@
 
 #include "commands/cmd_header.h"
 
+/*
+std::string
+hideInput(char replaceChar = ' ')
+{
+    struct termios oldTermios, newTermios;
+    tcgetattr(STDIN_FILENO, &oldTermios); // Save current terminal settings
+
+    newTermios = oldTermios;
+    newTermios.c_lflag &= ~ECHO; // Turn off echoing
+    tcsetattr(STDIN_FILENO, TCSANOW, &newTermios);
+
+    std::string input;
+    char ch;
+
+    while ((ch = getchar()) !=
+           '\n') {     // Read characters until Enter (Return) is pressed
+        if (ch == 8) { // Handle backspace
+            if (!input.empty()) {
+                std::cout << "\b \b"; // Clear the character on the screen
+                input.pop_back(); // Remove the last character from the input
+            }
+        } else {
+            std::cout << replaceChar; // Print the replacement character
+            input += ch;              // Store the actual character in the input
+        }
+    }
+
+    tcsetattr(
+      STDIN_FILENO, TCSANOW, &oldTermios); // Restore original terminal settings
+    std::cout << std::endl;                // Move to the next line after input
+
+    return input;
+}
+*/
+
 Application::Application()
   : appShouldClose(false)
 {
@@ -70,11 +105,7 @@ Application::handleCommand(std::string& commandStr)
     // One word command
     auto it = commands.find(commandName);
     if (it != commands.end()) {
-        if (it->first == "quit" || it->first == "exit") {
-            appShouldClose = true;
-        } else {
             it->second->execute(args, *db);
-        }
     } else {
         // Combine only the first argument with the command name
         std::string combinedCommand = commandName;
@@ -102,7 +133,7 @@ Application::registerCommands()
     commands["show files"] = std::make_unique<cmd::ShowFiles>();
     commands["ls"] = std::make_unique<cmd::ShowFiles>();
 
-    commands["select file"] = std::make_unique<cmd::SelectFile>();
+    commands["select"] = std::make_unique<cmd::SelectFile>();
 
     commands["show data"] = std::make_unique<cmd::ShowData>();
     commands["cat"] = std::make_unique<cmd::ShowData>();
