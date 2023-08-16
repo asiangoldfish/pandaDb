@@ -71,7 +71,7 @@ sudo mv build/bin/Linux64/Debug/pandaDb /usr/local/bin
   Makefile's.
 
   ```
-  git clone https://github.com/asiangoldfish/pandaDb --depth 1
+  git clone https://github.com/asiangoldfish/pandaDb
   cd pandaDb
   ```
 
