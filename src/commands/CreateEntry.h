@@ -16,6 +16,9 @@ class CreateEntry : public Command
   private:
     void createEntry(std::vector<std::string> values, PandaDB& db);
     void createEntry(std::string values, PandaDB& db);
+
+    // Transform raw input data to a format that the database understands
+    std::vector<std::string> parseValues(std::vector<std::string> args);
 };
 
 }

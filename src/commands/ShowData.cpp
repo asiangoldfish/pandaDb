@@ -9,7 +9,7 @@ cmd::ShowData::execute(const std::vector<std::string>& args, PandaDB& db)
     if (args.size() == 0) {
         this->showData(db);
     } else {
-        std::cout << "Usage: show data <filename>" << std::endl;
+        std::cout << "Usage: show data" << std::endl;
     }
 }
 

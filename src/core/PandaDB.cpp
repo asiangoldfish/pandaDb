@@ -121,8 +121,6 @@ PandaDB::createFile(std::string filename, std::vector<std::string> argStr)
         }
     }
 
-    output << "\n";
-
     return 0;
 }
 
@@ -183,6 +181,7 @@ PandaDB::showData()
         printSeperator('-', colwidth);
     }
 
+    int lineNum = -1;
     while (getline(infile, line)) {
         istringstream iss(line);
         string columnData;
@@ -202,9 +201,12 @@ PandaDB::showData()
         }
 
         cout << std::endl;
+        lineNum++;
     }
 
-    printSeperator('-', colwidth);
+    if (lineNum > 0) {
+        printSeperator('-', colwidth);
+    }
 
     return true;
 }
