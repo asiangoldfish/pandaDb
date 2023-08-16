@@ -59,6 +59,8 @@ PandaDB::PandaDB()
     legalTypes.push_back("bool");
     legalTypes.push_back("datetime");
     legalTypes.push_back("varchar");
+
+    compatibleSizeTypes.push_back("varchar");
 }
 
 bool

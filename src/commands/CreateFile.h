@@ -23,7 +23,7 @@ class CreateFile : public Command
     }
 
   private:
-    void createFile(std::string filename,
+    bool createFile(std::string filename,
                     std::vector<std::string> argStr,
                     PandaDB& db);
 };

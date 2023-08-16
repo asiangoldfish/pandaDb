@@ -39,6 +39,7 @@ inline std::string magenta = "\033[1;35m";
 inline std::string cyan = "\033[1;36m";
 inline std::string white = "\033[1;37m";
 
+bool isDigit(std::string value);
 }
 
 #endif

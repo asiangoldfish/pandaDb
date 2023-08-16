@@ -31,3 +31,20 @@ util::fileExists(std::string path)
 {
     return std::filesystem::exists(path);
 }
+
+bool
+util::isDigit(std::string value)
+{
+    bool isString = true;
+
+    // Source:
+    // https://www.tutorialspoint.com/how-to-check-if-a-c-cplusplus-string-is-an-int
+    for (int i = 0; i < value.size(); i++) {
+        if (!isdigit(value[i])) {
+            isString = false;
+            break;
+        }
+    }
+
+    return isString;
+}

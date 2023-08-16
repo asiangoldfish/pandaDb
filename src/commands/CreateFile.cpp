@@ -4,7 +4,7 @@
 #include "header.hpp"
 #include "util/util.h"
 
-void
+bool
 cmd::CreateFile::createFile(std::string filename,
                             std::vector<std::string> argStr,
                             PandaDB& db)
@@ -13,7 +13,7 @@ cmd::CreateFile::createFile(std::string filename,
 
     if (util::fileExists(conf::databaseDirPath() + "/" + filename)) {
         Logger::info("This file already exists");
-        return;
+        return false;
     }
 
     // Name, type
@@ -26,27 +26,49 @@ cmd::CreateFile::createFile(std::string filename,
         string dataTypeExpression = arg.substr(colonPos + 1);
 
         if (colonPos != string::npos) {
-            // varchar has length. Example: varchar(64) is 64 long string
             size_t openParenPos = dataTypeExpression.find('(');
             size_t closeParenPos = dataTypeExpression.find(')');
 
-            // If this is true, then it might be varchar type
-            if (openParenPos != std::string::npos &&
-                closeParenPos != std::string::npos) {
+            // Paranthesises were detected
+            if (openParenPos != std::string::npos) {
+                if (closeParenPos == std::string::npos) {
+                    Logger::info(
+                      "No closing paranthesis \')\' was found for \'" +
+                      columnName + "\'");
+                    return false;
+                }
+
                 string dataType = dataTypeExpression.substr(0, openParenPos);
 
                 string sizeExpression = dataTypeExpression.substr(
                   openParenPos + 1, closeParenPos - openParenPos - 1);
 
-                if (dataType != "varchar") {
+                // Compatible types with paranthesis
+                bool isCompatible = false;
+                for (auto type : db.getCompatibleSizeTypes()) {
+                    if (dataType == type) {
+                        isCompatible = true;
+                        break;
+                    }
+                }
+
+                if (!isCompatible) {
                     Logger::info("Type \'" + dataType + "\' is invalid");
-                    return;
+                    return false;
+                } else if (sizeExpression.empty()) {
+                    Logger::info("Type \'" + dataType +
+                                 "\' is needs a size expression. Example: " +
+                                 dataType + "(64)");
+                    return false;
+                } else if (!util::isDigit(sizeExpression)) {
+                    Logger::info("Size expression \'" + sizeExpression +
+                                 "\' of type \'" + dataType +
+                                 "\' is invalid. Must be an integer");
+                    return false;
                 }
 
                 columns[columnName] = dataTypeExpression;
             } else {
-                // Logger::debug("Searching " + dataTypeExpression + "...");
-
                 bool isTypeFound = false;
                 for (auto type : db.getLegalTypes()) {
                     if (dataTypeExpression == type) {
@@ -55,16 +77,25 @@ cmd::CreateFile::createFile(std::string filename,
                     }
                 }
 
-                if (isTypeFound) {
+                if (dataTypeExpression == "varchar") {
+                    Logger::info("Type \'varchar\' needs a size parameter. "
+                                 "Example: varchar(64)");
+                    return false;
+                } else if (isTypeFound) {
                     columns[columnName] = dataTypeExpression;
                 } else {
                     Logger::info("Type \'" + dataTypeExpression +
                                  "\' is invalid");
-                    return;
+                    return false;
                 }
             }
+        } else {
+            Logger::info("\'" + arg +
+                         "\' is an invalid type. Format must be \'name:type\'");
+            return false;
         }
     }
 
-    db.createFile(filename, argStr);
+    // Returns 0 if success, so we invert it
+    return !db.createFile(filename, argStr);
 }

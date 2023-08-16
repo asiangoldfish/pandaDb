@@ -37,10 +37,14 @@ class PandaDB
     {
         this->selectedFile = conf::databaseDirPath() + "/" + selectedFile;
     }
-    std::string getSelectedFile() { return selectedFile; }
     bool showData();
 
+    std::string getSelectedFile() { return selectedFile; }
     std::vector<std::string> getLegalTypes() const { return legalTypes; }
+    std::vector<std::string> getCompatibleSizeTypes() const
+    {
+        return compatibleSizeTypes;
+    }
 
   private:
     void printSeperator(char divider, int repetitions);
@@ -50,6 +54,9 @@ class PandaDB
     std::vector<std::string> specialFiles;
 
     std::vector<std::string> legalTypes;
+
+    // Types whose size is expressed with paranthesis. Example: varchar(64)
+    std::vector<std::string> compatibleSizeTypes;
 };
 
 #endif // "pd_database.h" included
